@@ -22,7 +22,7 @@ def pregunta_01():
     df =  pd.read_csv("insurance.csv")
 
     # Asigne la columna `charges` a la variable `y`.
-    y = df['charges'].values
+    y = df['charges']
 
     # Asigne una copia del dataframe `df` a la variable `X`.
     X = df.copy()
@@ -74,6 +74,7 @@ def pregunta_03():
     # Importe Pipeline
     # Importe OneHotEncoder
     from sklearn.compose import make_column_transformer
+    from sklearn.compose import ColumnTransformer
     from sklearn.compose import make_column_selector
     from sklearn.feature_selection import SelectKBest
     from sklearn.feature_selection import f_regression
@@ -89,11 +90,12 @@ def pregunta_03():
             # las variables.
             (
                 "column_transfomer",
-                make_column_transformer(
-                    (
-                        OneHotEncoder(handle_unknown='ignore'),
-                        make_column_selector(dtype_exclude='category'),
-                    ),
+                ColumnTransformer(
+                    [(
+                        "onehotencoder",
+                        OneHotEncoder(),
+                        make_column_selector(dtype_include='object'),
+                    )],
                     remainder="passthrough",
                 ),
             ),
@@ -117,9 +119,9 @@ def pregunta_03():
     # Defina un diccionario de parámetros para el GridSearchCV. Se deben
     # considerar valores desde 1 hasta 11 regresores para el modelo
     param_grid = {
-        "column_transfomer__n_jobs": [1],
-        "selectKBest__score_func":  [f_regression],
-        "LinearRegression__n_jobs":  [3],
+        #"column_transfomer__n_jobs": list(range(1,12)),
+        #"selectKBest__k":  list(range(1,12)),
+        "LinearRegression__fit_intercept":  list(range(1,12)),
     }
 
     # Defina una instancia de GridSearchCV con el pipeline y el diccionario de
@@ -131,7 +133,7 @@ def pregunta_03():
         cv=5,
         scoring='neg_mean_squared_error',
         refit=True,
-        return_train_score=True,
+        return_train_score=False,
     )
 
     # Búsque la mejor combinación de regresores
@@ -165,12 +167,12 @@ def pregunta_04():
 
     mse_train = mean_squared_error(
         y_train_pred,
-        y_train,
+        y_train
     ).round(2)
 
     mse_test = mean_squared_error(
         y_test_pred,
-        y_test,
+        y_test
     ).round(2)
 
     # Retorne el error cuadrático medio para entrenamiento y prueba
